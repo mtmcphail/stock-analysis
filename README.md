@@ -60,21 +60,38 @@ Those are the similiarities, so how was the original code improved, refactored?
 The most impactful difference in these two macros is the original code utilizes a nested ```for``` loop to where the refactored code uses only one.  
 
 #### **Original VBA Code: AllStocksAnalysis() Nested ```For``` Loop Excerpt**  
-      'Loop through the tickers
+
+      'Loop through the tickers
        For i = 0 To 11
-       		'Initialize totalVolume to zero for current ticker.       		 ticker = tickers(i)       		 totalVolume = 0
-       		          	'Activate data workSheet.
+       		'Initialize totalVolume to zero for current ticker.
+       		 ticker = tickers(i)
+       		 totalVolume = 0
+       		
+          	'Activate data workSheet.
           	 Worksheets(yearValue).Activate  
                      
            For j = 2 To RowCount
             	'Find the total volume for the current ticker.
-            	 If Cells(j, 1).Value = ticker Then    					totalVolume = totalVolume + Cells(j, 8).Value             	 End If                 				'Find the starting price for the current ticker.            	 If Cells(j - 1, 1).Value <> ticker And Cells(j, 1) = ticker Then
-                	 	startingPrice = Cells(j, 6).Value   				 End If    			'Find the ending price for the current ticker.
-   				 If Cells(j + 1, 1).Value <> ticker And Cells(j, 1) = ticker Then                    	endingPrice = Cells(j, 6).Value
+            	 If Cells(j, 1).Value = ticker Then
+    					totalVolume = totalVolume + Cells(j, 8).Value
+             	 End If                 
+
+				'Find the starting price for the current ticker.
+            	 If Cells(j - 1, 1).Value <> ticker And Cells(j, 1) = ticker Then
+                	 	startingPrice = Cells(j, 6).Value
+   				 End If
+
+    			'Find the ending price for the current ticker.
+   				 If Cells(j + 1, 1).Value <> ticker And Cells(j, 1) = ticker Then
+                    	endingPrice = Cells(j, 6).Value
            		 End If    
-           Next j        
+           Next j
+        
         	'Output values and calculate return to output sheet.
-        	 Worksheets("All Stocks Analysis").Activate        	 Cells(4 + i, 1).Value = ticker        	 Cells(4 + i, 2).Value = totalVolume        	 Cells(4 + i, 3).Value = (endingPrice / startingPrice) - 1
+        	 Worksheets("All Stocks Analysis").Activate
+        	 Cells(4 + i, 1).Value = ticker
+        	 Cells(4 + i, 2).Value = totalVolume
+        	 Cells(4 + i, 3).Value = (endingPrice / startingPrice) - 1
         Next i
 
 This code calls for reading or looping through the full data set for the specified year 12 times in order to identify "startingPrice", "endingPrice" and the "totalVolume" for each of the 12 stock tickers. In addition, at the end of each iteration, a summary of the ticker is output to the results worksheet "All Stocks Analysis".
@@ -83,14 +100,34 @@ However, with the refactored code, the macro only reads or loops through data
 set one time; the output to the summary chart occurs outside of the ```For``` loop further increasing the code's efficiency:  
 
 #### **Refactored VBA Code: AllStocksAnalysisRefactored(): ```For``` Loop Excerpt** 
-          	'Loop over all the rows in the spreadsheet.       	 For i = 2 To RowCount            		'Increase volume for current ticker; If/Then statement not necessary here    	 	 tickerVolumes(tickerIndex) = tickerVolumes(tickerIndex) + Cells(i, 8).Value			'Check if the current row is the first row with the selected tickerIndex; output to tickerStartingPrices array.              	 	 If Cells(i - 1, 1).Value <> tickers(tickerIndex) And Cells(i, 1).Value = tickers(tickerIndex) Then    			tickerStartingPrices(tickerIndex) = Cells(i, 6).Value            	 	 End If                   		'check if the current row is the last row with the selected ticker; output to tickerEndingPrices array.             	 	 If Cells(i + 1, 1).Value <> tickers(tickerIndex) Then            	 tickerEndingPrices(tickerIndex) = Cells(i, 6).Value                            	'Increase the tickerIndex for next iteration
+
+      
+    	'Loop over all the rows in the spreadsheet.   
+    	 For i = 2 To RowCount        
+    		'Increase volume for current ticker; If/Then statement not necessary here
+    	 	 tickerVolumes(tickerIndex) = tickerVolumes(tickerIndex) + Cells(i, 8).Value
+
+			'Check if the current row is the first row with the selected tickerIndex; output to tickerStartingPrices array.          
+    	 	 If Cells(i - 1, 1).Value <> tickers(tickerIndex) And Cells(i, 1).Value = tickers(tickerIndex) Then
+    			tickerStartingPrices(tickerIndex) = Cells(i, 6).Value        
+    	 	 End If       
+        
+    		'check if the current row is the last row with the selected ticker; output to tickerEndingPrices array.         
+    	 	 If Cells(i + 1, 1).Value <> tickers(tickerIndex) Then
+            	 tickerEndingPrices(tickerIndex) = Cells(i, 6).Value
+                
+            	'Increase the tickerIndex for next iteration
     		 	tickerIndex = tickerIndex + 1
-    		 End If		                             Next i
+    		 End If		                   
+          Next i
 
 It is through the use of output arrays and a ticker index    
-	```Dim tickerVolumes(12) As Long```      ```Dim tickerStartingPrices(12) As Single```     ``` Dim tickerEndingPrices(12) As Single```  
+	```Dim tickerVolumes(12) As Long```  
+    ```Dim tickerStartingPrices(12) As Single```  
+   ``` Dim tickerEndingPrices(12) As Single```  
     ```tickerIndex```  
-    as opposed to variables   
+    
+as opposed to variables   
 ```Dim startingPrice As Double```  
 ```Dim endingPrice As Double```
 
@@ -167,20 +204,44 @@ As it relates to this scenario, the disadvantage of refactoring the code is that
 
 However, the main advantage is that by refactoring the code Steve is now able to apply that code to larger data sets without worry. It is easier to follow and more efficient. 
 
-### Next Steps: Refactoring One Step Further###
+### Next Steps: Refactoring One Step Further ###
 The code discussed here was refactored to decrease processing time to allow for larger files should Steve want to add more companies to his analysis; but it did not improve its adaptability to a different data set. In other words, as is often the case, the refactoring can go further.  
 
 For example, if Steve would like to change the 12 stocks he is tracking or increase the number of stocks to track, he would have to manually update or add the ticker symbol to the code itself.
 
 The "tickers()" array used in both macros is hardcoded as shown below:  
 
-    Dim tickers(12) As String            tickers(0) = "AY"            tickers(1) = "CSIQ"            tickers(2) = "DQ"            tickers(3) = "ENPH"            tickers(4) = "FSLR"            tickers(5) = "HASI"            tickers(6) = "JKS"            tickers(7) = "RUN"            tickers(8) = "SEDG"            tickers(9) = "SPWR"            tickers(10) = "TERP"            tickers(11) = "VSLR"
+    Dim tickers(12) As String
+            tickers(0) = "AY"
+            tickers(1) = "CSIQ"
+            tickers(2) = "DQ"
+            tickers(3) = "ENPH"
+            tickers(4) = "FSLR"
+            tickers(5) = "HASI"
+            tickers(6) = "JKS"
+            tickers(7) = "RUN"
+            tickers(8) = "SEDG"
+            tickers(9) = "SPWR"
+            tickers(10) = "TERP"
+            tickers(11) = "VSLR"
 
 By adding a simple ```For``` loop that reads in the data and populates the output array tickers(), you eliminate the need to manually change or add ticker symbols to the code every time the collection of stocks is changed.  
-        'Initialize tickerIndex to 0
+
+    
+    'Initialize tickerIndex to 0
      tickerIndex = 0
     
-    'Populate tickers() with ticker names rather than hardcoding tickers     For i = 2 To RowCount             'set first element in tickers() to the first ticker in data              tickers(0) = Cells(2, 1).Value                             'Find the next ticker and increase tickerIndex              If Cells(i, 1).Value <> Cells(i + 1, 1).Value Then                tickerIndex = tickerIndex + 1                tickers(tickerIndex) = Cells(i + 1, 1).Value               End If      Next i
+    'Populate tickers() with ticker names rather than hardcoding tickers
+     For i = 2 To RowCount
+             'set first element in tickers() to the first ticker in data
+              tickers(0) = Cells(2, 1).Value
+                
+             'Find the next ticker and increase tickerIndex
+              If Cells(i, 1).Value <> Cells(i + 1, 1).Value Then
+                tickerIndex = tickerIndex + 1
+                tickers(tickerIndex) = Cells(i + 1, 1).Value
+               End If
+      Next i
      
      
 Understandably, the processing time is a bit slower than the first refactored code due to the extra loop through the data to populate the tickers() array. However, it is still significantly faster than the original, has the same external functionality, and is more adaptable to a different set of stocks. Please see Figures 5 and 6 below. 
